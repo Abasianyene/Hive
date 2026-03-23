@@ -11,7 +11,8 @@ const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 
 const PORT = Number(process.env.PORT || 5001);
-const JWT_SECRET = process.env.JWT_SECRET || "development-secret-change-me";
+const HAS_JWT_SECRET = Boolean(process.env.JWT_SECRET);
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString("hex");
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -20,7 +21,7 @@ const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "app-data.json");
 const FRONTEND_DIST_DIR = path.resolve(__dirname, "../frontend/dist");
 
-if (process.env.NODE_ENV === "production" && JWT_SECRET === "development-secret-change-me") {
+if (process.env.NODE_ENV === "production" && !HAS_JWT_SECRET) {
   console.error("JWT_SECRET must be set in production.");
   process.exit(1);
 }
@@ -408,9 +409,15 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 
 app.get("/api/health", (_req, res) => {
-  res.json({
+  const mongoHealthy = storage?.mode !== "mongo" || mongoose.connection.readyState === 1;
+  const fileHealthy = storage?.mode !== "file" || fs.existsSync(DATA_FILE);
+  const isHealthy = Boolean(storage) && mongoHealthy && fileHealthy;
+
+  res.status(isHealthy ? 200 : 503).json({
     status: "ok",
+    ready: isHealthy,
     storage: storage?.mode || "initializing",
+    mongoConnected: mongoose.connection.readyState === 1,
     openAIConfigured: Boolean(OPENAI_API_KEY),
     frontendBuilt: fs.existsSync(FRONTEND_DIST_DIR),
   });
@@ -631,7 +638,7 @@ initializeStorage()
   .then((readyStorage) => {
     storage = readyStorage;
     server.listen(PORT, () => {
-      console.log(`Hive server running on http://localhost:${PORT} using ${storage.mode} storage`);
+      console.log(`Hive server listening on port ${PORT} using ${storage.mode} storage`);
     });
   })
   .catch((error) => {

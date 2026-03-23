@@ -84,7 +84,7 @@ function HomePage() {
             <h1>Welcome back to Hive</h1>
             <p>
               The core flow now supports sign-in, profile updates, messaging, and a single deployment target instead of a
-              stack of disconnected localhost services.
+              split dev-only service setup.
             </p>
           </div>
         </article>

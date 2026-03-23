@@ -13,7 +13,7 @@ Hive is a single-repo social app with a Vite frontend and an Express backend. Th
 ## Local development
 
 1. Install dependencies from the repo root:
-   - `npm install`
+   - `npm ci`
 2. Start the backend:
    - `npm run dev:backend`
 3. Start the frontend:
@@ -29,7 +29,7 @@ The Vite dev server proxies `/api` and `/socket.io` to the backend on `http://lo
 ## Production build
 
 1. Install dependencies:
-   - `npm install`
+   - `npm ci`
 2. Build the frontend:
    - `npm run build`
 3. Start the app:
@@ -57,6 +57,8 @@ The best free fit for this app is Render because the app runs as one Express web
 ### Important free-tier caveat
 
 This app uses file-backed storage by default in `backend/data/app-data.json`, and free Render web services use an ephemeral filesystem. That means local data is lost when the service restarts, redeploys, or spins down. The backend now also supports `MONGODB_URI`, so you can keep Render as the host and attach a free MongoDB Atlas cluster for durable users, profiles, and messages.
+
+Render note: the service does not set `NODE_ENV=production` during the build step. That is intentional, because the frontend build depends on Vite and TypeScript devDependencies. Production mode is applied at runtime in the `startCommand` instead.
 
 ## Environment variables
 

@@ -1,16 +1,15 @@
 {
   "name": "hive-root",
   "private": true,
+  "engines": {
+    "node": ">=20 <25",
+    "npm": ">=10 <12"
+  },
   "scripts": {
-    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
+    "postinstall": "npm install --include=dev --prefix frontend && npm install --prefix backend",
     "build": "npm --prefix frontend run build",
     "start": "npm --prefix backend run start",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "node-fetch": "^2.7.0"
   }
 }
