@@ -1,9 +1,19 @@
-import '../index.css'
+import { Users } from "lucide-react";
+import FeaturePage from "../components/FeaturePage";
 
-const Friends = () => {
+function Friends() {
   return (
-    <div>Friends</div>
-  )
+    <FeaturePage
+      title="Friends"
+      description="Review your network and make future connection features easy to expand."
+      highlights={[
+        "Use this space for relationship management and people discovery.",
+        "Surface shared interests, activity, and follow-up opportunities.",
+        "Keep the route polished now so deeper social graph work has a clean base.",
+      ]}
+      icon={Users}
+    />
+  );
 }
 
-export default Friends
+export default Friends;

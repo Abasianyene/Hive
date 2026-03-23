@@ -1,70 +1,100 @@
-import React, { useState } from 'react';
-import '../index.css';
+import { useState, type KeyboardEvent } from "react";
+import { Sparkles } from "lucide-react";
+import { apiRequest } from "../lib/api";
 
-const Copilot = () => {
-  const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+function Copilot() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
-    const newMessages = [...messages, { role: 'user', content: input }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
+    if (!input.trim()) {
+      return;
+    }
+
+    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: input.trim() }];
+    setMessages(nextMessages);
+    setInput("");
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', { // <-- Use your proxy
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+      const data = await apiRequest<{
+        choices?: Array<{ message?: { content?: string } }>;
+      }>("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ messages: nextMessages }),
       });
-      const data = await response.json();
-      const aiMessage = data.choices?.[0]?.message?.content || 'No response';
-      setMessages([...newMessages, { role: 'assistant', content: aiMessage }]);
-    } catch (err) {
-      setMessages([...newMessages, { role: 'assistant', content: 'Error contacting ChatGPT.' }]);
+
+      const aiMessage = data.choices?.[0]?.message?.content || "No response returned.";
+      setMessages([...nextMessages, { role: "assistant", content: aiMessage }]);
+    } catch (error) {
+      setMessages([
+        ...nextMessages,
+        {
+          role: "assistant",
+          content:
+            error instanceof Error
+              ? error.message
+              : "Copilot is unavailable right now.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      void sendMessage();
+    }
   };
 
   return (
-    <div className="copilot-chat-container" style={{ maxWidth: 500, margin: '40px auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px #0001', padding: 24 }}>
-      <h2>Hive Copilot</h2>
-      <div style={{ minHeight: 200, marginBottom: 16 }}>
-        {messages.map((msg, idx) => (
-          <div key={idx} style={{ margin: '8px 0', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
-            <span style={{
-              display: 'inline-block',
-              background: msg.role === 'user' ? '#e6f7ff' : '#f0f0f0',
-              color: '#222',
-              borderRadius: 8,
-              padding: '8px 12px',
-              maxWidth: '80%',
-              wordBreak: 'break-word'
-            }}>
-              {msg.content}
-            </span>
-          </div>
-        ))}
-        {loading && <div style={{ color: '#888' }}>Copilot is typing...</div>}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Ask me anything..."
-          style={{ flex: 1, padding: 10, borderRadius: 6, border: '1px solid #ddd' }}
-          disabled={loading}
-        />
-        <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ padding: '0 18px', borderRadius: 6, background: '#0078d4', color: '#fff', border: 'none', fontWeight: 600 }}>
-          Send
-        </button>
-      </div>
-    </div>
+    <section className="copilot-layout">
+      <article className="page-card copilot-card">
+        <div className="copilot-card__header">
+          <span className="eyebrow">
+            <Sparkles size={16} />
+            AI assistant
+          </span>
+          <h1>Hive Copilot</h1>
+          <p>
+            The Copilot route is now connected to the backend. If the server has no `OPENAI_API_KEY`, the UI shows a
+            clear configuration message instead of failing silently.
+          </p>
+        </div>
+
+        <div className="copilot-thread">
+          {messages.length === 0 ? <p className="empty-copy">Ask about rollout steps, release notes, or deployment checks.</p> : null}
+          {messages.map((message, index) => (
+            <div key={`${message.role}-${index}`} className={`copilot-message${message.role === "user" ? " is-user" : ""}`}>
+              {message.content}
+            </div>
+          ))}
+          {isLoading ? <p className="empty-copy">Copilot is thinking...</p> : null}
+        </div>
+
+        <div className="copilot-input">
+          <input
+            type="text"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask Hive Copilot anything"
+            disabled={isLoading}
+          />
+          <button type="button" className="primary-button" disabled={isLoading || !input.trim()} onClick={() => void sendMessage()}>
+            Send
+          </button>
+        </div>
+      </article>
+    </section>
   );
-};
+}
 
 export default Copilot;

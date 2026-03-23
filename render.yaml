@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hive-app
+    runtime: node
+    plan: free
+    region: frankfurt
+    autoDeployTrigger: commit
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true

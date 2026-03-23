@@ -1,4 +1,13 @@
 {
+  "name": "hive-root",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix backend run start",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",

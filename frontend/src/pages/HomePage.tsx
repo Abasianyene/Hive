@@ -1,147 +1,162 @@
-import React, { useState } from 'react';
-import '../index.css';
+import { useState, type FormEvent } from "react";
+import { Heart, MessageSquareText, Sparkles } from "lucide-react";
+import { getStoredSession } from "../lib/session";
 
-const mockPosts = [
+type Post = {
+  id: number;
+  user: {
+    name: string;
+    avatar: string;
+  };
+  time: string;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: Array<{ user: string; text: string }>;
+};
+
+const starterPosts: Post[] = [
   {
     id: 1,
     user: {
-      name: 'Jane Doe',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg'
+      name: "Jane Doe",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
     },
-    time: '2 hrs ago',
-    content: "Had a great day at the park! 🌳🌞",
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-    likes: 12,
-    comments: [
-      { user: 'John Smith', text: 'Looks fun!' }
-    ]
+    time: "2 hours ago",
+    content: "Spent the afternoon planning our next community meetup and tightening the deployment checklist.",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+    likes: 24,
+    comments: [{ user: "John Smith", text: "Looks solid. Share the invite when ready." }],
   },
   {
     id: 2,
     user: {
-      name: 'John Smith',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
+      name: "John Smith",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     },
-    time: '5 hrs ago',
-    content: "Just finished a 10k run! 🏃‍♂️💨",
-    image: '',
-    likes: 8,
-    comments: []
-  }
+    time: "5 hours ago",
+    content: "The new build is finally clean. Next step is getting production env variables in place.",
+    likes: 16,
+    comments: [],
+  },
 ];
 
-const HomePage = () => {
-  const [posts, setPosts] = useState(mockPosts);
-  const [newPost, setNewPost] = useState('');
+function HomePage() {
+  const session = getStoredSession();
+  const [posts, setPosts] = useState(starterPosts);
+  const [newPost, setNewPost] = useState("");
 
-  const handlePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPost.trim()) return;
-    setPosts([
+  const handlePost = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!newPost.trim()) {
+      return;
+    }
+
+    setPosts((current) => [
       {
         id: Date.now(),
         user: {
-          name: 'You',
-          avatar: 'https://randomuser.me/api/portraits/lego/1.jpg'
+          name: session?.user.username || "You",
+          avatar:
+            session?.user.avatarUrl || "https://randomuser.me/api/portraits/lego/1.jpg",
         },
-        time: 'Just now',
-        content: newPost,
-        image: '',
+        time: "Just now",
+        content: newPost.trim(),
         likes: 0,
-        comments: []
+        comments: [],
       },
-      ...posts
+      ...current,
     ]);
-    setNewPost('');
+
+    setNewPost("");
   };
 
   return (
-    <div style={{
-      background: '#fff', // Changed from #f0f2f5 to white
-      minHeight: '100vh',
-      // width: '100vw',
-      display: 'flex',
-      flexDirection: 'row'
-    }}>
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '32px 0',
-        minHeight: '100vh',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: 540,
-          margin: '0 16px'
-        }}>
+    <section className="feed-layout">
+      <div className="feed-column">
+        <article className="page-card hero-card">
+          <div>
+            <span className="eyebrow">
+              <Sparkles size={16} />
+              Deployment audit complete
+            </span>
+            <h1>Welcome back to Hive</h1>
+            <p>
+              The core flow now supports sign-in, profile updates, messaging, and a single deployment target instead of a
+              stack of disconnected localhost services.
+            </p>
+          </div>
+        </article>
 
-          {/* Posts Feed */}
-          {posts.map(post => (
-            <div
-              key={post.id}
-              style={{
-                background: '#fff',
-                borderRadius: 12,
-                boxShadow: '0 2px 8px #0001',
-                marginBottom: 24,
-                padding: 20
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <img
-                  src={post.user.avatar}
-                  alt={post.user.name}
-                  style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }}
-                />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16 }}>{post.user.name}</div>
-                  <div style={{ color: '#888', fontSize: 13 }}>{post.time}</div>
-                </div>
-              </div>
-              <div style={{ fontSize: 16, marginBottom: post.image ? 12 : 0 }}>{post.content}</div>
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt="post"
-                  style={{
-                    width: '100%',
-                    borderRadius: 10,
-                    margin: '10px 0',
-                    maxHeight: 340,
-                    objectFit: 'cover'
-                  }}
-                />
-              )}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                marginTop: 10,
-                color: '#888',
-                fontSize: 15
-              }}>
-                <span>👍 {post.likes} Likes</span>
-                <span>💬 {post.comments.length} Comments</span>
-              </div>
-              {/* Comments */}
-              {post.comments.length > 0 && (
-                <div style={{ marginTop: 10 }}>
-                  {post.comments.map((c, i) => (
-                    <div key={i} style={{ color: '#444', fontSize: 15, marginBottom: 4 }}>
-                      <b>{c.user}:</b> {c.text}
-                    </div>
-                  ))}
-                </div>
-              )}
+        <article className="page-card composer-card">
+          <div className="composer-card__header">
+            <img
+              src={session?.user.avatarUrl || "https://randomuser.me/api/portraits/lego/1.jpg"}
+              alt={session?.user.username || "Your avatar"}
+            />
+            <div>
+              <strong>{session?.user.username || "Guest user"}</strong>
+              <span>Share a quick project update</span>
             </div>
-          ))}
-        </div>
-      </main>
-    </div>
+          </div>
+
+          <form onSubmit={handlePost} className="composer-form">
+            <textarea
+              value={newPost}
+              onChange={(event) => setNewPost(event.target.value)}
+              placeholder="What changed today?"
+              rows={4}
+            />
+            <div className="composer-form__footer">
+              <span>Keep it concise. The feed is optimized for status updates and community highlights.</span>
+              <button type="submit" className="primary-button">
+                Publish update
+              </button>
+            </div>
+          </form>
+        </article>
+
+        {posts.map((post) => (
+          <article key={post.id} className="page-card feed-post">
+            <div className="feed-post__header">
+              <img src={post.user.avatar} alt={post.user.name} />
+              <div>
+                <strong>{post.user.name}</strong>
+                <span>{post.time}</span>
+              </div>
+            </div>
+
+            <p>{post.content}</p>
+
+            {post.image ? <img src={post.image} alt="Post illustration" className="feed-post__image" /> : null}
+
+            <div className="feed-post__stats">
+              <span>
+                <Heart size={16} />
+                {post.likes} likes
+              </span>
+              <span>
+                <MessageSquareText size={16} />
+                {post.comments.length} comments
+              </span>
+            </div>
+
+            {post.comments.length ? (
+              <div className="feed-post__comments">
+                {post.comments.map((comment, index) => (
+                  <div key={`${post.id}-${index}`}>
+                    <strong>{comment.user}</strong>
+                    <span>{comment.text}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </section>
   );
-};
+}
 
 export default HomePage;

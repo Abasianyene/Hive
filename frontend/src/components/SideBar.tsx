@@ -1,88 +1,94 @@
-import '../index.css';
-import profile from '../assets/images/profile.png';
-import beehive from '../assets/images/bee-hive (1).png'; 
-import birthday from '../assets/images/birthday-cake.png';
-import video from '../assets/images/clapperboard.png';
-import page from '../assets/images/document.png';
-import friends from '../assets/images/people.png';
-import pilot from '../assets/images/pilot.png';
-import saved from '../assets/images/download.png';
-import market from '../assets/images/market.png';
-import payment from '../assets/images/dollar.png';
-import funds from '../assets/images/funds.png';
-import ads from '../assets/images/megaphone.png';
-import event from '../assets/images/black-ribbon.png';
-import memory from '../assets/images/card-games.png';
-import settings from '../assets/images/settings.png';
-import help from '../assets/images/question.png';
-import game from '../assets/images/joystick.png';
-import { Link, useLocation } from 'react-router-dom';
+import {
+  Bookmark,
+  Cake,
+  Calendar,
+  CircleHelp,
+  Gamepad2,
+  HandCoins,
+  History,
+  LayoutTemplate,
+  LogOut,
+  Megaphone,
+  Settings,
+  Sparkles,
+  Store,
+  UserRound,
+  UsersRound,
+  Video,
+  WalletCards,
+} from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { clearStoredSession, getStoredSession } from "../lib/session";
 
 const sidebarLinks = [
-  { to: '/profile', icon: profile, label: 'My Profile' },
-  { to: '/friends', icon: friends, label: 'Friends' },
-  { to: '/hives', icon: beehive, label: 'Hives' },
-  { to: '/copilot', icon: pilot, label: 'Hive Copilot' },
-  { to: '/saved', icon: saved, label: 'Saved' },
-  { to: '/pages', icon: page, label: 'Pages' },
-  { to: '/market', icon: market, label: 'Buzz-Market' },
-  { to: '/ordersAndPayments', icon: payment, label: 'Orders & Payments' },
-  { to: '/fundraisers', icon: funds, label: 'Fund Raisers' },
-  { to: '/ads', icon: ads, label: 'Ad Center' },
-  { to: '/birthdays', icon: birthday, label: 'Birthdays' },
-  { to: '/events', icon: event, label: 'Events' },
-  { to: '/memories', icon: memory, label: 'Memories' },
-  { to: '/games', icon: game, label: 'Games' },
-  { to: '/videos', icon: video, label: 'Videos' },
-  { to: '/settings', icon: settings, label: 'Settings' },
-  { to: '/help', icon: help, label: 'Help' },
+  { to: "/profile", icon: UserRound, label: "Profile" },
+  { to: "/friends", icon: UsersRound, label: "Friends" },
+  { to: "/hives", icon: UsersRound, label: "Hives" },
+  { to: "/copilot", icon: Sparkles, label: "Copilot" },
+  { to: "/saved", icon: Bookmark, label: "Saved" },
+  { to: "/pages", icon: LayoutTemplate, label: "Pages" },
+  { to: "/market", icon: Store, label: "Market" },
+  { to: "/ordersAndPayments", icon: WalletCards, label: "Orders & Payments" },
+  { to: "/fundraiser", icon: HandCoins, label: "Fundraiser" },
+  { to: "/ads", icon: Megaphone, label: "Ad Center" },
+  { to: "/birthday", icon: Cake, label: "Birthdays" },
+  { to: "/event", icon: Calendar, label: "Events" },
+  { to: "/memories", icon: History, label: "Memories" },
+  { to: "/games", icon: Gamepad2, label: "Games" },
+  { to: "/videos", icon: Video, label: "Videos" },
+  { to: "/settings", icon: Settings, label: "Settings" },
+  { to: "/help", icon: CircleHelp, label: "Help" },
 ];
 
-const SideBar = () => {
+function SideBar() {
   const location = useLocation();
-  const currentPath = location.pathname;
+  const navigate = useNavigate();
+  const session = getStoredSession();
+
+  const handleLogout = () => {
+    clearStoredSession();
+    navigate("/login");
+  };
 
   return (
-    <aside style={{
-      width: '350px',
-      background: '#F0F2F5',
-      padding: '24px 12px',
-      minHeight: '100vh',
-      height: '100vh',
-      overflowY: 'auto', // Enable scrolling only for the sidebar
-      position: 'sticky',
-      top: 0
-    }}>
-      <nav className='sidebar-nav'>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {sidebarLinks.map(link => (
-            <li
-              key={link.to}
-              style={{
-                margin: '25px 10px',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              <Link
-                to={link.to}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  color: currentPath === link.to ? '#FFD700' : 'inherit'
-                }}
-              >
-                <img src={link.icon} alt={link.label} style={{ width: 40, height: 40, marginRight: 10 }} />
-                {link.label}
-              </Link>
-            </li>
-          ))}
+    <aside className="app-sidebar">
+      <div className="sidebar-profile-card">
+        <div className="sidebar-profile-card__avatar">
+          {session?.user.avatarUrl ? (
+            <img src={session.user.avatarUrl} alt={session.user.username} />
+          ) : (
+            <UserRound size={24} />
+          )}
+        </div>
+        <div>
+          <strong>{session?.user.username || "Guest user"}</strong>
+          <p>{session?.user.email || "Log in to unlock messaging and profile sync."}</p>
+        </div>
+      </div>
+
+      <nav className="sidebar-nav" aria-label="Sidebar navigation">
+        <ul>
+          {sidebarLinks.map(({ to, icon: Icon, label }) => {
+            const isActive = location.pathname === to;
+
+            return (
+              <li key={to}>
+                <Link to={to} className={isActive ? "is-active" : ""}>
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
+
+      <button type="button" className="sidebar-logout" onClick={handleLogout}>
+        <LogOut size={16} />
+        <span>Log out</span>
+      </button>
     </aside>
-  )
+  );
 }
 
-export default SideBar
+export default SideBar;

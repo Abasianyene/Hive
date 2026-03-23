@@ -1,225 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import logo from '../assets/images/bee-hive.png'; // Adjust path if needed
-import '../index.css';
-// import { socket } from '../socket';
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/images/bee-hive.png";
+import { apiRequest } from "../lib/api";
+import { setStoredSession, type Session } from "../lib/session";
 
-const recentLogins = [
+const demoAccounts = [
   {
-    username: 'janedoe',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    email: 'janedoe@email.com'
+    username: "Jane Doe",
+    email: "jane@hive.demo",
+    password: "Password123!",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
-    username: 'johnsmith',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    email: 'johnsmith@email.com'
-  }
-  // Add more as needed
+    username: "John Smith",
+    email: "john@hive.demo",
+    password: "Password123!",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+  },
 ];
 
-const Login = () => {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [msg, setMsg] = useState('');
-  const [userId, setUserId] = useState(null); // Local user ID state
-  const [onlineUsers, setOnlineUsers] = useState([]); // Online users state
+function Login() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setMessage("");
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    const res = await fetch('http://localhost:5001/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
-    const data = await res.json();
-    if (data.token) {
-      setMsg('Login successful!');
-      localStorage.setItem('token', data.token);
-      setUserId(data.userId); // Set user ID on successful login
-    } else {
-      setMsg(data.error);
+    try {
+      const session = await apiRequest<Session>("/api/login", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+
+      setStoredSession(session);
+      navigate("/");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to log in.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Handle quick login (for demo, just fills the email)
-  const handleQuickLogin = (email) => {
-    setForm(f => ({ ...f, email }));
+  const handleDemoLogin = (email: string, password: string) => {
+    setForm({ email, password });
+    setMessage("Demo credentials loaded. Submit to continue.");
   };
 
-  // On login or page load
-  useEffect(() => {
-    if (userId) socket.emit('user-online', userId);
-  }, [userId]);
-
-  // Listen for online users
-  useEffect(() => {
-    socket.on('online-users', (users) => setOnlineUsers(users));
-    return () => socket.off('online-users');
-  }, []);
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f0f2f5',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      {/* Left Side: Logo and Recent Logins */}
-      <div style={{
-        flex: 1,
-        maxWidth: 420,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        marginRight: 48
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-          <img src={logo} alt="Hive Logo" style={{ width: 60, height: 60, marginRight: 18 }} />
-          <span style={{ fontWeight: 800, fontSize: 38, color: '#FFD700', letterSpacing: 1 }}>Hive</span>
-        </div>
-        <div style={{
-          background: '#fff',
-          borderRadius: 14,
-          boxShadow: '0 2px 12px #0001',
-          padding: '40px 25px 40px 25px',
-          width: '100%',
-          maxWidth: 340,
-          minHeight: 250 // <-- Increased height
-        }}>
-          <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12, color: '#222' }}>
-            Recent logins
+    <div className="auth-shell">
+      <section className="auth-panel auth-panel--brand">
+        <div className="auth-brand">
+          <img src={logo} alt="Hive logo" />
+          <div>
+            <h1>Hive</h1>
+            <p>Social tools, messaging, and community spaces in one deployable app.</p>
           </div>
-          <div style={{ display: 'flex', gap: 18 }}>
-            {recentLogins.map(user => (
-              <div
-                key={user.email}
-                onClick={() => handleQuickLogin(user.email)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  width: 80
-                }}
+        </div>
+
+        <div className="auth-demo-card">
+          <h2>Demo access</h2>
+          <p>Use one of the seeded accounts below to test the deployed app quickly.</p>
+          <div className="auth-demo-list">
+            {demoAccounts.map((account) => (
+              <button
+                key={account.email}
+                type="button"
+                className="auth-demo-user"
+                onClick={() => handleDemoLogin(account.email, account.password)}
               >
-                <img
-                  src={user.avatar}
-                  alt={user.username}
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '2px solid #FFD700',
-                    marginBottom: 6
-                  }}
-                />
-                <span style={{
-                  fontSize: 15,
-                  color: '#222',
-                  fontWeight: 500,
-                  textAlign: 'center',
-                  wordBreak: 'break-word'
-                }}>{user.username}</span>
-              </div>
+                <img src={account.avatar} alt={account.username} />
+                <div>
+                  <strong>{account.username}</strong>
+                  <span>{account.email}</span>
+                </div>
+              </button>
             ))}
           </div>
-          <div style={{ fontSize: 13, color: '#888', marginTop: 10 }}>
-            Click your account to log in faster.
-          </div>
+          <small>
+            Password for both demo users: <code>Password123!</code>
+          </small>
         </div>
-      </div>
+      </section>
 
-      {/* Right Side: Login Form */}
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: '#fff',
-          padding: '40px 36px 32px 36px',
-          borderRadius: 16,
-          boxShadow: '0 2px 16px #0001',
-          minWidth: 350,
-          maxWidth: '90vw',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18
-        }}
-      >
-        <h2 style={{
-          textAlign: 'center',
-          marginBottom: 10,
-          fontWeight: 700,
-          fontSize: 28,
-          color: '#222'
-        }}>Log in to Hive</h2>
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          style={{
-            padding: '12px 16px',
-            borderRadius: 8,
-            border: '1px solid #eee',
-            background: '#f0f2f5',
-            fontSize: 16
-          }}
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          style={{
-            padding: '12px 16px',
-            borderRadius: 8,
-            border: '1px solid #eee',
-            background: '#f0f2f5',
-            fontSize: 16
-          }}
-        />
-        <div style={{ textAlign: 'right', marginBottom: -10 }}>
-          <Link to="/forgot-password" style={{ color: '#1877f2', textDecoration: 'none', fontWeight: 500, fontSize: 15 }}>
-            Forgotten password?
-          </Link>
-        </div>
-        <button
-          type="submit"
-          style={{
-            background: '#FFD700',
-            color: '#222',
-            border: 'none',
-            borderRadius: 8,
-            padding: '12px 0',
-            fontWeight: 700,
-            fontSize: 18,
-            cursor: 'pointer',
-            marginTop: 8,
-            boxShadow: '0 1px 2px #0001'
-          }}
-        >
-          Login
-        </button>
-        <div style={{ textAlign: 'center', color: msg.includes('success') ? '#45bd62' : '#f5533d', fontWeight: 500 }}>
-          {msg}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 6 }}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: '#1877f2', textDecoration: 'none', fontWeight: 600 }}>
-            Register
-          </Link>
-        </div>
-      </form>
+      <section className="auth-panel auth-panel--form">
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div>
+            <h2>Sign in</h2>
+            <p>Log in to access your feed, profile settings, and messaging.</p>
+          </div>
+
+          <label>
+            <span>Email</span>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Password</span>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+              placeholder="Enter your password"
+              required
+            />
+          </label>
+
+          <div className="auth-form__meta">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </div>
+
+          <button type="submit" className="primary-button" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Log in"}
+          </button>
+
+          {message ? <p className="form-message">{message}</p> : null}
+
+          <p className="auth-form__footer">
+            Need an account? <Link to="/register">Create one</Link>
+          </p>
+        </form>
+      </section>
     </div>
   );
-};
+}
 
 export default Login;
