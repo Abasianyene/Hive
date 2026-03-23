@@ -1,5 +1,6 @@
+import { Link } from "react-router-dom";
+import { Activity, Heart, MessageSquareText, ShieldCheck, Sparkles } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Heart, MessageSquareText, Sparkles } from "lucide-react";
 import { getStoredSession } from "../lib/session";
 
 type Post = {
@@ -41,6 +42,27 @@ const starterPosts: Post[] = [
   },
 ];
 
+const heroMetrics = [
+  {
+    value: "24/7",
+    label: "Single deploy path",
+    detail: "Profiles, messaging, and feed now run from one app service.",
+    icon: ShieldCheck,
+  },
+  {
+    value: "Live",
+    label: "Inbox presence",
+    detail: "Socket activity and direct threads feel like part of one product.",
+    icon: Activity,
+  },
+  {
+    value: "Clean",
+    label: "UI refresh",
+    detail: "The shell now reads like a branded app instead of a loose prototype.",
+    icon: Sparkles,
+  },
+];
+
 function HomePage() {
   const session = getStoredSession();
   const [posts, setPosts] = useState(starterPosts);
@@ -76,16 +98,37 @@ function HomePage() {
     <section className="feed-layout">
       <div className="feed-column">
         <article className="page-card hero-card">
-          <div>
+          <div className="hero-card__copy">
             <span className="eyebrow">
               <Sparkles size={16} />
-              Deployment audit complete
+              Honeycomb workspace
             </span>
             <h1>Welcome back to Hive</h1>
             <p>
-              The core flow now supports sign-in, profile updates, messaging, and a single deployment target instead of a
-              split dev-only service setup.
+              A warmer shell, clearer hierarchy, and tighter spacing make the product feel like one system instead of a stack
+              of disconnected screens.
             </p>
+            <div className="hero-card__actions">
+              <Link to="/messages" className="primary-button">
+                Open inbox
+              </Link>
+              <Link to="/profile" className="secondary-button">
+                Edit profile
+              </Link>
+            </div>
+          </div>
+
+          <div className="hero-card__stats">
+            {heroMetrics.map(({ value, label, detail, icon: Icon }) => (
+              <article key={label} className="hero-stat-card">
+                <div className="hero-stat-card__icon">
+                  <Icon size={18} />
+                </div>
+                <strong>{value}</strong>
+                <span>{label}</span>
+                <p>{detail}</p>
+              </article>
+            ))}
           </div>
         </article>
 
@@ -117,6 +160,11 @@ function HomePage() {
           </form>
         </article>
 
+        <div className="feed-section__label">
+          <span>Team updates</span>
+          <small>Recent activity from your network</small>
+        </div>
+
         {posts.map((post) => (
           <article key={post.id} className="page-card feed-post">
             <div className="feed-post__header">
@@ -127,7 +175,7 @@ function HomePage() {
               </div>
             </div>
 
-            <p>{post.content}</p>
+            <p className="feed-post__content">{post.content}</p>
 
             {post.image ? <img src={post.image} alt="Post illustration" className="feed-post__image" /> : null}
 

@@ -90,12 +90,23 @@ function Profile() {
   return (
     <section className="profile-layout">
       <article className="page-card profile-hero">
-        <div className="profile-hero__avatar">
-          {form.avatarUrl ? <img src={form.avatarUrl} alt={form.username || "Profile"} /> : <Camera size={26} />}
+        <div className="profile-hero__body">
+          <div className="profile-hero__avatar">
+            {form.avatarUrl ? <img src={form.avatarUrl} alt={form.username || "Profile"} /> : <Camera size={26} />}
+          </div>
+          <div className="profile-hero__copy">
+            <span className="eyebrow">Profile studio</span>
+            <h1>{form.username || "Guest profile"}</h1>
+            <p>{form.bio || "Add a short bio so people know what you are working on."}</p>
+            <div className="profile-hero__chips">
+              <span>{form.email || "No email"}</span>
+              <span>Account synced</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <h1>{form.username || "Guest profile"}</h1>
-          <p>{form.bio || "Add a short bio so people know what you are working on."}</p>
+        <div className="profile-hero__aside">
+          <strong>Personal brand</strong>
+          <p>Keep your avatar, bio, and display name aligned so the rest of the app feels consistent.</p>
         </div>
       </article>
 

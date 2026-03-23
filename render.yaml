@@ -6,7 +6,7 @@ services:
     region: frankfurt
     autoDeployTrigger: commit
     buildCommand: npm ci && npm run build
-    startCommand: NODE_ENV=production npm start
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: JWT_SECRET

@@ -60,6 +60,8 @@ This app uses file-backed storage by default in `backend/data/app-data.json`, an
 
 Render note: the service does not set `NODE_ENV=production` during the build step. That is intentional, because the frontend build depends on Vite and TypeScript devDependencies. Production mode is applied at runtime in the `startCommand` instead.
 
+The repo also includes [.node-version](C:\Users\Abasi\OneDrive\Documents\GitHub\Hive\.node-version) to pin Render to Node `22.22.0`, which matches Render's documented current default for newly created Node services.
+
 ## Environment variables
 
 Backend values are documented in [backend/.env.example](C:\Users\Abasi\OneDrive\Documents\GitHub\Hive\backend\.env.example).

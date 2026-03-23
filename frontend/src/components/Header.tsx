@@ -28,16 +28,18 @@ function Header() {
   return (
     <header className="site-header">
       <div className="site-header__brand">
-        <img src={logo} alt="Hive logo" />
-        <div>
+        <div className="site-header__brand-mark">
+          <img src={logo} alt="Hive logo" />
+        </div>
+        <div className="site-header__brand-copy">
           <span>Hive</span>
-          <small>Community in one place</small>
+          <small>Community operating system</small>
         </div>
       </div>
 
       <div className="site-header__search">
         <Search size={18} />
-        <input type="text" placeholder="Search Hive" aria-label="Search Hive" />
+        <input type="text" placeholder="Search people, spaces, updates" aria-label="Search Hive" />
       </div>
 
       <nav className="site-header__nav" aria-label="Primary navigation">
@@ -58,6 +60,10 @@ function Header() {
       </nav>
 
       <div className="site-header__actions">
+        <div className="site-header__status">
+          <span className="site-header__status-dot" />
+          <span>Live workspace</span>
+        </div>
         <Link to="/copilot" className="header-action-button">
           <Sparkles size={18} />
           <span>Copilot</span>

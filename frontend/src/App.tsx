@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import Footer from "./components/Footer";
 import Header from "./components/Header";
 import SideBar from "./components/SideBar";
 import { getStoredSession } from "./lib/session";
@@ -77,6 +78,7 @@ function App() {
           </Routes>
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

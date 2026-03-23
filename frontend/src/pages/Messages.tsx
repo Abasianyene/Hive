@@ -160,6 +160,7 @@ function Messages() {
     <section className="messages-layout">
       <aside className="page-card messages-sidebar">
         <div className="messages-sidebar__header">
+          <span className="eyebrow">Private threads</span>
           <h1>Messages</h1>
           <p>{contacts.length} contacts available</p>
         </div>
@@ -183,9 +184,14 @@ function Messages() {
                     <UserRound size={18} />
                   </div>
                 )}
-                <div>
+                <div className="messages-contact__content">
                   <strong>{contact.username}</strong>
-                  <span>{isOnline ? "Online now" : contact.email}</span>
+                  <div className="messages-contact__meta">
+                    <span>{contact.email}</span>
+                    <span className={`presence-pill${isOnline ? " is-online" : ""}`}>
+                      {isOnline ? "Online" : "Away"}
+                    </span>
+                  </div>
                 </div>
               </button>
             );
@@ -197,10 +203,22 @@ function Messages() {
         {selectedContact ? (
           <>
             <header className="messages-thread__header">
-              <div>
-                <h2>{selectedContact.username}</h2>
-                <p>{onlineUsers.includes(selectedContact.id) ? "Online" : selectedContact.bio || selectedContact.email}</p>
+              <div className="messages-thread__person">
+                {selectedContact.avatarUrl ? (
+                  <img src={selectedContact.avatarUrl} alt={selectedContact.username} className="messages-thread__avatar" />
+                ) : (
+                  <div className="messages-thread__avatar messages-thread__avatar--fallback">
+                    <UserRound size={18} />
+                  </div>
+                )}
+                <div>
+                  <h2>{selectedContact.username}</h2>
+                  <p>{onlineUsers.includes(selectedContact.id) ? "Online" : selectedContact.bio || selectedContact.email}</p>
+                </div>
               </div>
+              <span className={`presence-pill${onlineUsers.includes(selectedContact.id) ? " is-online" : ""}`}>
+                {onlineUsers.includes(selectedContact.id) ? "Live now" : "Direct thread"}
+              </span>
             </header>
 
             <div className="messages-thread__body">

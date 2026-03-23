@@ -1,13 +1,17 @@
-import '../index.css'
+import "../index.css";
 
 const Footer = () => {
   return (
-    <footer className="footer">
-      <div className="footer-content">
-        &copy; {new Date().getFullYear()} Hive. All rights reserved. | <a href="/privacy-policy">Privacy Policy</a> | <a href="/terms-of-service">Terms of Service</a>
+    <footer className="site-footer">
+      <div className="site-footer__inner">
+        <div>
+          <strong>Hive</strong>
+          <p>One deployable social workspace for updates, messaging, and community operations.</p>
+        </div>
+        <span>© {new Date().getFullYear()} Hive</span>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

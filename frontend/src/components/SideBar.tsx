@@ -9,6 +9,7 @@ import {
   LayoutTemplate,
   LogOut,
   Megaphone,
+  MessageCircleMore,
   Settings,
   Sparkles,
   Store,
@@ -20,14 +21,19 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clearStoredSession, getStoredSession } from "../lib/session";
 
-const sidebarLinks = [
+const primaryLinks = [
   { to: "/profile", icon: UserRound, label: "Profile" },
   { to: "/friends", icon: UsersRound, label: "Friends" },
+  { to: "/messages", icon: MessageCircleMore, label: "Messages" },
   { to: "/hives", icon: UsersRound, label: "Hives" },
   { to: "/copilot", icon: Sparkles, label: "Copilot" },
+  { to: "/market", icon: Store, label: "Market" },
+  { to: "/videos", icon: Video, label: "Videos" },
+];
+
+const utilityLinks = [
   { to: "/saved", icon: Bookmark, label: "Saved" },
   { to: "/pages", icon: LayoutTemplate, label: "Pages" },
-  { to: "/market", icon: Store, label: "Market" },
   { to: "/ordersAndPayments", icon: WalletCards, label: "Orders & Payments" },
   { to: "/fundraiser", icon: HandCoins, label: "Fundraiser" },
   { to: "/ads", icon: Megaphone, label: "Ad Center" },
@@ -35,7 +41,6 @@ const sidebarLinks = [
   { to: "/event", icon: Calendar, label: "Events" },
   { to: "/memories", icon: History, label: "Memories" },
   { to: "/games", icon: Gamepad2, label: "Games" },
-  { to: "/videos", icon: Video, label: "Videos" },
   { to: "/settings", icon: Settings, label: "Settings" },
   { to: "/help", icon: CircleHelp, label: "Help" },
 ];
@@ -62,26 +67,50 @@ function SideBar() {
         </div>
         <div>
           <strong>{session?.user.username || "Guest user"}</strong>
+          <span className="sidebar-profile-card__tag">Workspace member</span>
           <p>{session?.user.email || "Log in to unlock messaging and profile sync."}</p>
         </div>
       </div>
 
-      <nav className="sidebar-nav" aria-label="Sidebar navigation">
-        <ul>
-          {sidebarLinks.map(({ to, icon: Icon, label }) => {
-            const isActive = location.pathname === to;
+      <section className="sidebar-section">
+        <div className="sidebar-section__title">Explore</div>
+        <nav className="sidebar-nav" aria-label="Primary sidebar navigation">
+          <ul>
+            {primaryLinks.map(({ to, icon: Icon, label }) => {
+              const isActive = location.pathname === to;
 
-            return (
-              <li key={to}>
-                <Link to={to} className={isActive ? "is-active" : ""}>
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+              return (
+                <li key={to}>
+                  <Link to={to} className={isActive ? "is-active" : ""}>
+                    <Icon size={18} />
+                    <span>{label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </section>
+
+      <section className="sidebar-section">
+        <div className="sidebar-section__title">Manage</div>
+        <nav className="sidebar-nav" aria-label="Utility sidebar navigation">
+          <ul>
+            {utilityLinks.map(({ to, icon: Icon, label }) => {
+              const isActive = location.pathname === to;
+
+              return (
+                <li key={to}>
+                  <Link to={to} className={isActive ? "is-active" : ""}>
+                    <Icon size={18} />
+                    <span>{label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </section>
 
       <button type="button" className="sidebar-logout" onClick={handleLogout}>
         <LogOut size={16} />
